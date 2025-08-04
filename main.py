@@ -8,6 +8,7 @@ import time # For converting datetime to Unix timestamp
 import os
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 app = FastAPI()

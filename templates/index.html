@@ -16,7 +16,7 @@
             padding: 3rem;
             position: relative;
             /* width: 100%; */
-            max-width: 24rem;
+            max-width: 75rem;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .input-field {
@@ -72,14 +72,16 @@
             top: 0;
             left: 100%;
             margin-left: 1rem;
-            width: 20rem;
-            border-radius: 1.5rem;
-            box-shadow:
-                0 10px 30px rgba(0,0,0,0.05),
-                0 5px 15px rgba(0,0,0,0.03);
-            padding: 1.5rem;
+            width: 50rem;
+            border-radius: 3rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 3rem;
             transition: opacity 0.3s ease, transform 0.3s ease;
             /* opacity: 0; */
+            /* box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); */
+            /* padding: 3rem; */
+            /* width: 100%; */
+            /* max-width: 75rem; */
         }
         .results-panel.visible {
             opacity: 1;
@@ -97,7 +99,7 @@
             p.text-sm { color: #475569; }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 flex items-center justify-start min-h-screen px-40 py-4">
 
     <div class="form-container">
         <h1 class="text-4xl font-extrabold text-center text-gray-900 mb-8">
@@ -153,9 +155,22 @@
         {% endif %}
 
         {% if result_found %}
-        <div id="results-container" class="results-panel bg-white rounded-lg shadow p-4 space-y-4">
+        <div id="results-container">
             
-            <div id="results" class="space-y-4">
+            <div id="results" class="results-panel space-y-4">
+                <div class="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+                    <div class="flex flex-col items-center">
+                        <span class="text-sm font-bold text-gray-500 mb-1">Origin</span>
+                        <span class="text-2xl font-extrabold text-gray-900 break-all">{{trip_origin}}</span>
+                    </div>
+                    <svg class="w-8 h-8 text-gray-400 rotate-90 sm:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                    <div class="flex flex-col items-center">
+                        <span class="text-sm font-bold text-gray-500 mb-1">Destination</span>
+                        <span class="text-2xl font-extrabold text-gray-900 break-all">{{trip_destination}}</span>
+                    </div>
+                </div>
                 <div class="flex flex-col p-2 border-b border-gray-200">
                     <div class="flex items-center mb-1 gap-x-4">
                         <h4 class="flex-1 text-lg font-semibold text-gray-800">{{pnr_one}}</h4>
