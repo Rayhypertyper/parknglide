@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Park & Ride Time Estimator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        }
+        .form-container {
+            background-color: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 3rem;
+            position: relative;
+            /* width: 100%; */
+            max-width: 24rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .input-field {
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            }
+        .input-field:focus {
+            background: #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.2);
+            }
+        .submit-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.15s ease-in;
+        }
+        .submit-button:focus .btn-text {
+            opacity: 0;
+            transition: opacity 0.15s ease-in;
+        }
+        .submit-button:focus .loading-spinner {
+            opacity: 1;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .input-field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        .results-panel {
+            background: white;
+            position: absolute;
+            top: 0;
+            left: 100%;
+            margin-left: 1rem;
+            width: 20rem;
+            border-radius: 1.5rem;
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.05),
+                0 5px 15px rgba(0,0,0,0.03);
+            padding: 1.5rem;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            /* opacity: 0; */
+        }
+        .results-panel.visible {
+            opacity: 1;
+            transform: translateY(0);
+            }
+
+            /* ==== CARD SEPARATORS ==== */
+        .results-panel .border-b {
+            border-color: #e2e8f0;
+            }
+
+            /* ==== TYPOGRAPHY TWEAKS ==== */
+            h1 { letter-spacing: -0.02em; }
+            h4 { letter-spacing: -0.01em; }
+            p.text-sm { color: #475569; }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="form-container">
+        <h1 class="text-4xl font-extrabold text-center text-gray-900 mb-8">
+            Park & Ride Estimator
+        </h1>
+
+        <form id="estimatorForm" action="/estimate" method="POST" class="space-y-6">
+            <div>
+                <label for="origin" class="block text-gray-700 text-sm font-bold mb-2">Origin</label>
+                <input type="text" id="origin" name="origin" required placeholder="e.g., Downtown Ottawa"
+                       class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label for="destination" class="block text-gray-700 text-sm font-bold mb-2">Destination</label>
+                <input type="text" id="destination" name="destination" required placeholder="e.g., Greenboro Station"
+                       class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label for="departureDate" class="block text-gray-700 text-sm font-bold mb-2">Departure Date</label>
+                <input type="date" id="departureDate" name="departureDate" required
+                       class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <label for="departureTime" class="block text-gray-700 text-sm font-bold mb-2">Departure Time</label>
+                <input type="time" id="departureTime" name="departureTime" required
+                       class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500">
+            </div>
+            <script>
+                const now = new Date();
+                 now.setMinutes(now.getMinutes() + 2);
+
+                // Set current date in yyyy-mm-dd format
+                const dateInput = document.getElementById('departureDate');
+                dateInput.value = now.toISOString().split('T')[0];
+
+                // Set current time in hh:mm format
+                const timeInput = document.getElementById('departureTime');
+                const pad = n => n.toString().padStart(2, '0');
+                timeInput.value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            </script>
+            <button type="submit"
+                    class="submit-button w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <span class="btn-text">Calculate Time</span>
+                <div class="loading-spinner"></div>
+            </button>
+        </form>
+        
+        {% if error_message %}
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mt-6 shadow-md">
+            <p class="font-bold">Error:</p>
+            <p>{{ error_message }}</p>
+        </div>
+        {% endif %}
+
+        {% if result_found %}
+        <div id="results-container" class="results-panel bg-white rounded-lg shadow p-4 space-y-4">
+            
+            <div id="results" class="space-y-4">
+                <div class="flex flex-col p-2 border-b border-gray-200">
+                    <div class="flex items-center mb-1 gap-x-4">
+                        <h4 class="flex-1 text-lg font-semibold text-gray-800">{{pnr_one}}</h4>
+                        <p class="text-xl font-bold inline-block px-2 py-1 text-sm font-semibold rounded-full
+                            {% if time_one < 30 %}
+                                bg-green-100 text-green-700
+                            {% elif time_one <= 60 %}
+                                bg-yellow-100 text-yellow-700
+                            {% else %}
+                                bg-red-100 text-red-700
+                            {% endif %}
+
+
+                        ">{{time_one}} min</p>
+                    </div>
+                    <p class="text-sm text-gray-600">Origin → Park: <span class="font-medium">{{park_one}} min</span></p>
+                    <p class="text-sm text-gray-600">Park → Destination: <span class="font-medium">{{ride_one}} min</span></p>
+                    <p class="text-sm text-gray-600">Arrival Time: <span class="font-medium">{{arrival_one}}</span></p>
+                </div>
+                <div class="flex flex-col p-2 border-b border-gray-200">
+                    <div class="flex items-center mb-1 gap-x-4">
+                        <h4 class="flex-1 text-lg font-semibold text-gray-800">{{pnr_two}}</h4>
+                         <p class="text-xl font-bold inline-block px-2 py-1 text-sm font-semibold rounded-full
+                            {% if time_two < 30 %}
+                                bg-green-100 text-green-700
+                            {% elif time_two <= 60 %}
+                                bg-yellow-100 text-yellow-700
+                            {% else %}
+                                bg-red-100 text-red-700
+                            {% endif %}
+                        ">{{time_two}} min</p>
+                    </div>
+                    <p class="text-sm text-gray-600">Origin → Park: <span class="font-medium">{{park_two}} min</span></p>
+                    <p class="text-sm text-gray-600">Park → Destination: <span class="font-medium">{{ride_two}} min</span></p>
+                    <p class="text-sm text-gray-600">Arrival Time: <span class="font-medium">{{arrival_two}}</span></p>
+                </div>
+                <div class="flex flex-col p-2">
+                    <div class="flex items-center mb-1 gap-x-4">
+                        <h4 class=" flex-1 text-lg font-semibold text-gray-800">{{pnr_three}}</h4>
+                         <p class="text-xl font-bold inline-block px-2 py-1 text-sm font-semibold rounded-full
+                            {% if time_three < 30 %}
+                                bg-green-100 text-green-700
+                            {% elif time_three <= 60 %}
+                                bg-yellow-100 text-yellow-700
+                            {% else %}
+                                bg-red-100 text-red-700
+                            {% endif %}
+                        ">{{time_three}} min</p>
+                    </div>
+                    <p class="text-sm text-gray-600">Origin → Park: <span class="font-medium">{{park_three}} min</span></p>
+                    <p class="text-sm text-gray-600">Park → Destination: <span class="font-medium">{{ride_three}} min</span></p>
+                    <p class="text-sm text-gray-600">Arrival Time: <span class="font-medium">{{arrival_three}}</span></p>                </div>
+            </div>
+            <div id="error-message" class="hidden text-red-600 text-sm"></div>
+        </div>
+    </div>
+    {% endif %}
+<!-- 
+    <script>
+        document.getElementById('estimatorForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('loading-spinner').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results-container').classList.remove('hidden');
+        });
+        document.getElementById('departureDate').valueAsDate = new Date();
+    </script> -->
+
+</body>
+</html>
